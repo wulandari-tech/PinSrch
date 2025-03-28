@@ -34,5 +34,5 @@ app.get('/api/search', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server berjalan di http://localhost:${PORT}`);
+    console.log(`Server berjalan di https://pin-srch.vercel.app/`);
 });
