@@ -1,0 +1,13 @@
+{
+  "name": "pinterest-search",
+  "version": "1.0.0",
+  "description": "Pinterest Downloader",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.17.3",
+    "axios": "^0.27.2"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
