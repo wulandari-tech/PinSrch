@@ -17,7 +17,7 @@
             padding: 0;
             overflow-x: hidden; /* Prevent horizontal scroll */
         }
-        /* Tambahkan CSS kustom untuk tampilan futuristik (minimalis) */
+        /* CSS kustom untuk tampilan futuristik (minimalis) */
         .container {
             max-width: 1200px;
             margin: 2rem auto;
@@ -84,11 +84,38 @@
             font-size: 0.875rem;
             color: #a0aec0;
         }
-
+        .news-item {
+            background-color: #2d3748; /* Gray Darker */
+            border-radius: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+        .news-title {
+            font-weight: bold;
+            font-size: 1.25rem; /* Slightly larger title */
+            margin-bottom: 0.5rem;
+        }
+        .news-actions {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end; /* Align buttons to the right */
+        }
+        .delete-button {
+            background-color: #e53e3e;  /* Red - for delete */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .delete-button:hover {
+            background-color: #c53030;  /* Darker red */
+        }
     </style>
 </head>
 <body>
-
     <div class="container">
         <header class="header">
             <h1 class="text-4xl font-bold tracking-tight">Wanzofc News - Admin Dashboard</h1>
@@ -113,6 +140,11 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="file">File (zip, arz, txt, dll.) :</label>
+                    <input type="file" id="file" name="file">
+                </div>
+
+                <div class="form-group">
                     <label for="creator">Penulis:</label>
                     <input type="text" id="creator" name="creator" required class="focus:ring-2 focus:ring-blue-500">
                 </div>
@@ -123,17 +155,87 @@
             </form>
         </section>
 
-         <footer class="footer">
-            <p>&copy; 2024 Wanzofc News - All rights reserved.</p>
+        <section class="mt-8">
+            <h2 class="text-2xl font-semibold mb-4">Daftar Berita</h2>
+            <div id="news-list">
+                <!-- Daftar berita akan ditampilkan di sini -->
+            </div>
+        </section>
+
+        <footer class="footer">
+            <p>© 2024 Wanzofc News - All rights reserved.</p>
         </footer>
     </div>
 
     <script>
-        // --- JavaScript (Contoh) ---
-        // Contoh: Penanganan form submission (sederhana)
-        document.querySelector('form').addEventListener('submit', (event) => {
-            //event.preventDefault();  // Hapus komentar jika Anda ingin mencegah default submit
-            // Tambahkan logika lain jika diperlukan, misalnya notifikasi sukses
+        // --- JavaScript ---
+        document.addEventListener('DOMContentLoaded', () => {
+
+            function loadNews() {
+                fetch('/api/news')
+                    .then(response => response.json())
+                    .then(news => {
+                        const newsList = document.getElementById('news-list');
+                        newsList.innerHTML = ''; // Kosongkan daftar berita
+
+                        news.forEach((newsItem, index) => {
+                            const newsElement = document.createElement('div');
+                            newsElement.classList.add('news-item');
+
+                            newsElement.innerHTML = `
+                                <h3 class="news-title">${newsItem.title}</h3>
+                                <p>Penulis: ${newsItem.creator}</p>
+                                <p>Tanggal: ${newsItem.date}</p>
+                                ${newsItem.image ? `<img src="${newsItem.image}" alt="${newsItem.title}" style="max-width: 100px;">` : ''}
+                                ${newsItem.file ? `<a href="/download/${newsItem.file.split('/').pop()}" target="_blank">Unduh File</a>` : ''}
+                                <div class="news-actions">
+                                    <button class="delete-button" data-index="${index}">Hapus</button>
+                                </div>
+                            `;
+                            newsList.appendChild(newsElement);
+                        });
+
+                        // Tambahkan event listener untuk tombol delete setelah berita dimuat
+                        document.querySelectorAll('.delete-button').forEach(button => {
+                            button.addEventListener('click', handleDelete);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching news:', error));
+            }
+             // Panggil loadNews() saat halaman dimuat
+            loadNews();
+
+            // Function untuk handle delete
+            function handleDelete(event) {
+                const index = event.target.dataset.index;
+                if (confirm('Apakah Anda yakin ingin menghapus berita ini?')) {
+                    fetch(`/api/news/${index}`, {
+                        method: 'DELETE'
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            alert('Berita berhasil dihapus.');
+                            loadNews(); // Muat ulang daftar berita setelah dihapus
+                        } else {
+                            alert('Gagal menghapus berita.');
+                        }
+                    })
+                    .catch(error => console.error('Error deleting news:', error));
+                }
+            }
+
+            // Penanganan form submission (sederhana)
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', (event) => {
+                     //  event.preventDefault(); // Hapus Komentar jika perlu
+
+                    // Optionally, reset the form after successful submission
+                   // form.reset();
+
+                    loadNews(); // Muat ulang daftar berita setelah submit form
+                });
+            }
         });
     </script>
 </body>
